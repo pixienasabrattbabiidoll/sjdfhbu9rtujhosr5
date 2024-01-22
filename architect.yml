@@ -1,15 +1,11 @@
-name: react
-
+name: sjdfhbu9rtujhosr5
 description: |
   An Architect Starter Project using React.
-
-homepage: https://github.com/architect-templates/react
-
+homepage: 'https://github.com/architect-templates/react'
 keywords:
   - react
   - express
   - javascript
-
 secrets:
   db_user:
     description: Root user to assign to the component's DB
@@ -26,44 +22,30 @@ secrets:
   api_port:
     description: Port for api
     default: 8080
-
-# Below are the configured services for the React component.
-# For more info - https://docs.architect.io/components/services/
 services:
   app:
     depends_on:
-      # We want our app to start up after the api is running so that we can connect to it on startup!
-      # This block contains a list of services we need to start before 'app' starts.
       - api
-    # Build context is the location of your application relative to the architect.yml file
     build:
       context: ./
       args:
         NODE_ENV: production
-    # Main interface port used to help define the url in the `interfaces` block
     interfaces:
       main:
         port: 8080
-        #   Ingresses are used to expose the application to the API gateway, allowing
-        #   other services and dependencies to connect to it.
-        #   For more info - https://docs.architect.io/components/ingress-rules/
         ingress:
           subdomain: app
     environment:
       PORT: 8080
-      REACT_APP_API_ADDR: ${{ services.api.interfaces.http.ingress.url }}
+      REACT_APP_API_ADDR: '${{ services.api.interfaces.http.ingress.url }}'
     command: npm run start
-    # The liveness_probe makes sure the application is healthy - if not, it will re-start the application
     liveness_probe:
-      command: curl --fail 0.0.0.0:8080
+      command: 'curl --fail 0.0.0.0:8080'
       interval: 30s
       failure_threshold: 3
-    # The debug block is used to enable hot-reloading to make real-time changes to an
-    #   application while running `architect dev`. For more info, see -
-    #   https://docs.architect.io/components/local-configuration/#hot-reloading
     debug:
       environment:
-        WDS_SOCKET_PORT: ${{ services.api.interfaces.http.ingress.port }} # Port for the react development server ws
+        WDS_SOCKET_PORT: '${{ services.api.interfaces.http.ingress.port }}'
       liveness_probe:
         initial_delay: 30s
       command: npm run dev
@@ -72,35 +54,33 @@ services:
           NODE_ENV: development
       volumes:
         src:
-          # The `WORKDIR` defined in the Dockerfile (/usr/src/app) + name of source code directory (/src)
           mount_path: /usr/src/app/src
-          # Path to source code relative to the architect.yml file (/src)
           host_path: ./src
   api-db:
-    image: postgres:12
+    image: 'postgres:12'
     interfaces:
       database:
-        port: ${{ secrets.db_port }}
+        port: '${{ secrets.db_port }}'
         protocol: postgresql
     environment:
-      POSTGRES_USER: ${{ secrets.db_user }}
-      POSTGRES_PASSWORD: ${{ secrets.db_pass }}
-      POSTGRES_DB: ${{ secrets.db_name }}
+      POSTGRES_USER: '${{ secrets.db_user }}'
+      POSTGRES_PASSWORD: '${{ secrets.db_pass }}'
+      POSTGRES_DB: '${{ secrets.db_name }}'
     liveness_probe:
-      command: pg_isready -d ${{ secrets.db_name }} -U ${{ secrets.db_user }}
+      command: 'pg_isready -d ${{ secrets.db_name }} -U ${{ secrets.db_user }}'
       interval: 10s
       failure_threshold: 3
   api:
     depends_on:
       - api-db
-    image: registry.gitlab.com/architect-io/docker-files/sample-backend:latest
+    image: 'registry.gitlab.com/architect-io/docker-files/sample-backend:latest'
     interfaces:
       http:
-        port: ${{ secrets.api_port }}
+        port: '${{ secrets.api_port }}'
         ingress:
           subdomain: api
     environment:
-      DB_ADDR: ${{ services.api-db.interfaces.database.url }}/${{ secrets.db_name }}
-      DB_USER: ${{ secrets.db_user }}
-      DB_PASS: ${{ secrets.db_pass }}
-      PORT: ${{ secrets.api_port }}
+      DB_ADDR: '${{ services.api-db.interfaces.database.url }}/${{ secrets.db_name }}'
+      DB_USER: '${{ secrets.db_user }}'
+      DB_PASS: '${{ secrets.db_pass }}'
+      PORT: '${{ secrets.api_port }}'
